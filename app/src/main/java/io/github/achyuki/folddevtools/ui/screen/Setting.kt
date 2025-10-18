@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -25,6 +26,7 @@ import me.zhanghai.compose.preference.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(navigator: NavController) {
+    val uriHandler = LocalUriHandler.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -148,6 +150,16 @@ fun SettingScreen(navigator: NavController) {
                         Text(text = "Open devtools using the external browser")
                     }
                 )
+                preference(
+                    key = "github",
+                    title = { Text(text = "GitHub") },
+                    icon = {
+                        Icon(imageVector = Icons.Outlined.Code, contentDescription = null)
+                    },
+                    summary = { Text(text = "Review the source code or report issues") }
+                ) {
+                    uriHandler.openUri("https://github.com/achyuki/FoldDevtools")
+                }
             }
         }
     }
