@@ -32,10 +32,10 @@ jobs:
       - name: Create Sign File
         run: |
           touch signing.properties
+          echo storeFile=../keystore.jks >> signing.properties
           echo storePassword=${{ secrets.KEY_STORE_PASSWORD }} >> signing.properties
           echo keyAlias=${{ secrets.KEY_ALIAS }} >> signing.properties
           echo keyPassword='${{ secrets.KEY_STORE_PASSWORD }}' >> signing.properties
-          echo storeFile=../keystore.jks >> signing.properties
           echo ${{ secrets.KEY_DATA }} | base64 --decode > keystore.jks
 
       - name: Build Release

@@ -3,9 +3,11 @@
 .idea
 .kotlin
 .DS_Store
-build
+/build
 captures
 .externalNativeBuild
 .cxx
 local.properties
 kls_database.db
+signing.properties
+keystore.jks
