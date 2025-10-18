@@ -18,6 +18,42 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+
+      - name: Setup depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "$GITHUB_WORKSPACE/depot_tools" >> $GITHUB_PATH
+
+      - name: Checkout devtools-frontend
+        run: |
+          git clone --depth=1 https://chromium.googlesource.com/devtools/devtools-frontend
+          gclient config https://chromium.googlesource.com/devtools/devtools-frontend --unmanaged
+
+      - name: Build devtools-frontend
+        run: |
+          echo "FRONTEND_GIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          sed -i 's/is_official_build = false/is_official_build = true/g' build_overrides/BUILDCONFIG.gn
+          gclient sync
+          vpython3 third_party/node/node.py --output scripts/run_build.mjs
+        working-directory: devtools-frontend
+
+      - name: Minify devtools-frontend
+        run: |
+          find devtools-frontend/out/Default/gen/front_end -type f \( \
+            -name "*.d" -o \
+            -name "*.grd" -o \
+            -name "*.gz" -o \
+            -name "*.test.js" -o \
+            -name "*.js.map" -o \
+            -name "*.ts.map" -o \
+            -name "*.d.ts" -o \
+            -name "*-tsconfig.json" \
+            -name "Tests.js" \
+            -name "tests.txt" \
+          \) -exec rm -f {} +
+          mv devtools-frontend/out/Default/gen/front_end app/src/main/assets/devtools-frontend
+
+
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
@@ -38,11 +74,11 @@ jobs:
           echo keyPassword='${{ secrets.KEY_STORE_PASSWORD }}' >> signing.properties
           echo ${{ secrets.KEY_DATA }} | base64 --decode > keystore.jks
 
-      - name: Build Release
+      - name: Build App Release
         run: |
           bash gradlew assembleRelease
 
-      - name: Build Debug
+      - name: Build App Debug
         run: |
           bash gradlew assembleDebug
 
@@ -50,10 +86,12 @@ jobs:
         run: |
           echo "APK_FILE_RELEASE=$(find app/build/outputs/apk/release -name '*.apk')" >> $GITHUB_ENV
           echo "APK_FILE_DEBUG=$(find app/build/outputs/apk/debug -name '*.apk')" >> $GITHUB_ENV
-          
-      - name: Show Artifacts SHA256
+  
+      - name: Show Artifacts Summary
         run: |
           echo "### Build Success :rocket:" >> $GITHUB_STEP_SUMMARY
+          frontend=(${{ env.FRONTEND_GIT_HASH }})
+          echo "Devtools-frontend Git Hash: $frontend" >> $GITHUB_STEP_SUMMARY
           echo "|ABI|SHA256|" >> $GITHUB_STEP_SUMMARY
           echo "|:--------:|:----------|" >> $GITHUB_STEP_SUMMARY
           release=($(sha256sum ${{ env.APK_FILE_RELEASE }}))
@@ -71,3 +109,8 @@ jobs:
         with:
           name: FoldDevtools-debug-${{ github.event.head_commit.id }}
           path: ${{ env.APK_FILE_DEBUG }}
+      - name: Upload Artifacts Frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: devtools-frontend-${{ env.FRONTEND_GIT_HASH }}
+          path: app/src/main/assets/devtools-frontend
