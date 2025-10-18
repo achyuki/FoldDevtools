@@ -26,7 +26,7 @@
 Termux:
 ```Shell
 # Get the debug localsocket name of WebView
-su -c cat /proc/net/unix | grep devtools_remote
+adb shell cat /proc/net/unix | grep devtools_remote
 # 0000000000000000: 00000002 00000000 00010000 0001 01 xxxxxxx @webview_devtools_remote_<pid>
 
 # Perform port forwarding
