@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +43,7 @@ fun AttachPageList(navigator: NavController) {
     val entryPage = preferences.getString("entrypage", null) ?: "devtools_app"
     val extBrowser = preferences.getBoolean("extbrowser", false)
     var isForeground = true
+    val devtoolsClient = DevtoolsClient("127.0.0.1", bindPort)
 
     when (val state = pagesScreenState) {
         is ScreenState.Loading -> {
@@ -63,7 +66,7 @@ fun AttachPageList(navigator: NavController) {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(pages) {
-                            AttachPageItem(it) {
+                            AttachPageItem(it, devtoolsClient) {
                                 var dbgurl = "http://127.0.0.1:$bindPort/$entryPage.html?ws="
                                 if (it.type == "app") {
                                     // Stetho
@@ -121,8 +124,7 @@ fun AttachPageList(navigator: NavController) {
             while (isActive) {
                 if (isForeground) {
                     try {
-                        val client = DevtoolsClient("127.0.0.1", bindPort)
-                        val pages = client.getPages()
+                        val pages = devtoolsClient.getPages()
                         val pageList = mutableListOf<PageInfo>()
                         for (i in 0 until pages.length()) {
                             try {
@@ -166,7 +168,7 @@ fun AttachPageList(navigator: NavController) {
 }
 
 @Composable
-fun AttachPageItem(pageInfo: PageInfo, onClick: (pageInfo: PageInfo) -> Unit = {}) {
+fun AttachPageItem(pageInfo: PageInfo, devtoolsClient: DevtoolsClient, onClick: (pageInfo: PageInfo) -> Unit = {}) {
     val context = LocalContext.current
     Card(
         modifier = Modifier.fillMaxSize(),
@@ -186,6 +188,32 @@ fun AttachPageItem(pageInfo: PageInfo, onClick: (pageInfo: PageInfo) -> Unit = {
                         .padding(bottom = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                        ),
+                        modifier = Modifier.padding(end = 8.dp)
+
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clickable {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        devtoolsClient.closePage(pageInfo.id)
+                                    }
+                                }
+                        ) {
+                            Icon(
+                                Icons.Outlined.Close,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(horizontal = 6.dp, vertical = 4.dp)
+                                    .size(16.dp)
+                            )
+                        }
+                    }
+
                     Card(
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(
