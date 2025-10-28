@@ -264,7 +264,7 @@ fun AttachPageItem(pageInfo: PageInfo, onClick: (pageInfo: PageInfo) -> Unit = {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    val faviconUrl = getFaviconUrl(pageInfo.url)
+                    val faviconUrl = pageInfo.url.takeIf { it.startsWith("http") }?.let { getFaviconUrl(pageInfo.url) }
                     Log.d(TAG, "geticon $faviconUrl")
 
                     SubcomposeAsyncImage(

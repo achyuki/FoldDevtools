@@ -87,10 +87,18 @@ fun RemoteAppsList(navigator: NavController, service: IRemoteService) {
                         Log.d(TAG, "devtools list: $rsList")
                         val apps = rsList.mapNotNull { rs ->
                             try {
-                                val pattern = "_(\\d+)$".toRegex()
-                                val pid = pattern.find(rs)?.groupValues?.get(1)?.toInt()
-                                require(pid != null)
-                                val packageName = service.getPackageNameByPid(pid)
+                                var pid: Int? = null
+                                val packageName = if (rs.startsWith("stetho_")) {
+                                    val pattern = "stetho_(.*)_devtools_remote".toRegex()
+                                    val packageNameM = pattern.find(rs)?.groupValues?.get(1)
+                                    require(packageNameM != null)
+                                    packageNameM
+                                } else {
+                                    val pattern = "_(\\d+)$".toRegex()
+                                    pid = pattern.find(rs)?.groupValues?.get(1)?.toInt()
+                                    require(pid != null)
+                                    service.getPackageNameByPid(pid)
+                                }
                                 if (packageName == null) throw Exception("Get packagename error")
                                 val appInfo = packageManager.getApplicationInfo(packageName, 0)
                                 val appName = packageManager.getApplicationLabel(appInfo).toString()
@@ -182,19 +190,17 @@ fun RemoteAppItem(appInfo: RemoteAppInfo, onClick: (appInfo: RemoteAppInfo) -> U
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
 
-                    if (appInfo.pid != null) {
-                        Text(
-                            text = "PID: ${appInfo.pid}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                    } else {
-                        Text(
-                            text = "Socket: ${appInfo.socketName}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                    }
+                    Text(
+                        text = if (appInfo.pid != null) {
+                            "PID: ${appInfo.pid}"
+                        } else if (appInfo.packageName != null) {
+                            "Stetho"
+                        } else {
+                            "Socket: ${appInfo.socketName}"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
                 }
             }
         }
