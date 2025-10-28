@@ -12,6 +12,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -247,7 +248,10 @@ object DevtoolsWindow {
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .padding(end = 10.dp)
-                                .clickable { toggleWindowState() },
+                                .combinedClickable(
+                                    onClick = { toggleWindowState() },
+                                    onLongClick = { close() }
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("⚫", fontSize = 14.sp)
