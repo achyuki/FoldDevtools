@@ -64,11 +64,18 @@ fun AttachPageList(navigator: NavController) {
                     ) {
                         items(pages) {
                             AttachPageItem(it) {
-                                val devurl = "http://127.0.0.1:$bindPort/$entryPage.html?ws=127.0.0.1:$bindPort/devtools/page/${it.id}"
-                                if (extBrowser) {
-                                    uriHandler.openUri(devurl)
+                                var dbgurl = "http://127.0.0.1:$bindPort/$entryPage.html?ws="
+                                if (it.type == "app") {
+                                    // Stetho
+                                    dbgurl += "127.0.0.1:$bindPort/inspector"
                                 } else {
-                                    navigator.navigate(Screen.Frontend.create(it.title, devurl))
+                                    // WebView
+                                    dbgurl += it.webSocketDebuggerUrl.removePrefix("ws://").removePrefix("ws:\\/\\/")
+                                }
+                                if (extBrowser) {
+                                    uriHandler.openUri(dbgurl)
+                                } else {
+                                    navigator.navigate(Screen.Frontend.create(it.title, dbgurl))
                                 }
                             }
                         }
