@@ -60,7 +60,7 @@ fun SettingScreen(navigator: NavController) {
                         Icon(imageVector = Icons.Outlined.Layers, contentDescription = null)
                     },
                     summary = {
-                        Text(text = if (it) "Debugging local WebView using root" else "Debugging only through remote access")
+                        Text(text = if (it) "Debug local WebView with root access" else "Debug only through remote access")
                     }
                 )
                 switchPreference(
@@ -71,7 +71,7 @@ fun SettingScreen(navigator: NavController) {
                         Icon(imageVector = Icons.Outlined.Healing, contentDescription = null)
                     },
                     summary = {
-                        Text(text = "Force enable WebView debugging through xposed hook")
+                        Text(text = "Force-enable WebView debugging through xposed hook")
                     }
                 )
                 val pages = listOf("devtools_app", "inspector")
@@ -125,7 +125,7 @@ fun SettingScreen(navigator: NavController) {
                         Icon(imageVector = Icons.Outlined.ContentCopy, contentDescription = null)
                     },
                     summary = {
-                        Text(text = "Using floating windows for local pages")
+                        Text(text = "Use floating windows for local pages")
                     }
                 )
                 switchPreference(
@@ -136,7 +136,7 @@ fun SettingScreen(navigator: NavController) {
                         Icon(imageVector = Icons.Outlined.ContentCopy, contentDescription = null)
                     },
                     summary = {
-                        Text(text = "Using floating windows for remote pages")
+                        Text(text = "Use floating windows for remote pages")
                     }
                 )
                 switchPreference(
