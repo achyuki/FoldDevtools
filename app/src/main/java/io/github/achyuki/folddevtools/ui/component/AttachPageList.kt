@@ -24,13 +24,14 @@ import androidx.navigation.NavController
 import coil3.compose.SubcomposeAsyncImage
 import io.github.achyuki.folddevtools.TAG
 import io.github.achyuki.folddevtools.core.DevtoolsClient
+import io.github.achyuki.folddevtools.core.PageInfo
+import io.github.achyuki.folddevtools.core.prasePageInfo
 import io.github.achyuki.folddevtools.preferences
 import io.github.achyuki.folddevtools.ui.screen.Screen
 import io.github.achyuki.folddevtools.ui.screen.ScreenState
 import java.io.*
 import java.net.URL
 import kotlinx.coroutines.*
-import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -335,41 +336,4 @@ fun getFaviconUrl(urlStr: String): String? = try {
     "$protocol://$host$port/favicon.ico"
 } catch (e: Exception) {
     null
-}
-
-data class PageInfo(
-    val width: Int?,
-    val height: Int?,
-    val screenX: Int?,
-    val screenY: Int?,
-    val attached: Boolean?,
-    val never_attached: Boolean?,
-    val empty: Boolean?,
-    val visible: Boolean?,
-    val id: String,
-    val title: String,
-    val type: String,
-    val url: String,
-    val webSocketDebuggerUrl: String
-)
-
-fun prasePageInfo(page: JSONObject): PageInfo {
-    val descriptionStr = page.optString("description", "")
-    val description = if (descriptionStr.isNotEmpty())JSONObject(descriptionStr)else null
-    val width = description?.getInt("width")
-    val height = description?.getInt("height")
-    val screenX = description?.getInt("screenX")
-    val screenY = description?.getInt("screenY")
-    val attached = description?.getBoolean("attached")
-    val never_attached = description?.getBoolean("never_attached")
-    val empty = description?.getBoolean("empty")
-    val visible = description?.getBoolean("visible")
-
-    val id = page.getString("id")
-    val title = page.getString("title")
-    val type = page.getString("type")
-    val url = page.getString("url")
-    val webSocketDebuggerUrl = page.getString("webSocketDebuggerUrl")
-
-    return PageInfo(width, height, screenX, screenY, attached, never_attached, empty, visible, id, title, type, url, webSocketDebuggerUrl)
 }

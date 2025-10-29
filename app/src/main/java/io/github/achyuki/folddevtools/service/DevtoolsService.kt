@@ -165,22 +165,26 @@ class DevtoolsService : Service() {
         client.use {
             val ins = it.getInputStream()
             val ous = it.getOutputStream()
+            var httpVersion = "Unknown"
 
-            while (isActive) {
+            while (isActive && httpVersion != "HTTP/1.0") {
                 val headers = ins.praseHeader()
-                headers.remove("Origin")
-                val path = headers.getProtocol()[1].substringBefore("?").substringBefore("#")
+                httpVersion = headers.getProtocol()[2]
+                headers.remove("Origin") // bypass https://github.com/chromium/chromium/blob/e89a5a846259a8769064296db13b1d1cbf24ea6c/content/browser/devtools/devtools_http_handler.cc#L761
+                val path = headers.getProtocol()[1].substringBefore("?")
                 Log.d(TAG, "GET ${headers.getProtocol()[1]}")
                 try {
                     val inputStream = appContext.assets.open("devtools-frontend$path")
                     val content = inputStream.readBytes()
 
                     val response = StringBuilder()
-                    response.appendLine("HTTP/1.1 200 OK")
+                    response.appendLine("$httpVersion 200 OK")
                     response.appendLine("Content-Type: ${getMimeType(path)}")
-                    response.appendLine("Content-Length: ${content.size}")
-                    response.appendLine("Connection: keep-alive")
-                    response.appendLine("Access-Control-Allow-Origin: *")
+                    if (httpVersion != "HTTP/1.0") {
+                        response.appendLine("Content-Length: ${content.size}")
+                        response.appendLine("Connection: keep-alive")
+                    }
+                    response.appendLine("Access-Control-Allow-Origin: *") // bypass CORS
                     response.appendLine("")
                     ous.write(
                         response
@@ -206,12 +210,17 @@ class DevtoolsService : Service() {
                                         Log.d(TAG, "WebSocket pipe terminated")
                                     } else {
                                         val resHeaders = rins.praseHeader()
-                                        val bodyLength = resHeaders.get("Content-Length")!!.toInt()
-                                        val bodyBytes = rins.readNBytes(bodyLength)
-
+                                        httpVersion = resHeaders.getProtocol()[0]
                                         ous.write(resHeaders.build())
-                                        ous.write(bodyBytes)
-                                        ous.flush()
+                                        if (httpVersion == "HTTP/1.0") {
+                                            socketPipe(rins to rous, ins to ous)
+                                        } else {
+                                            val bodyLength = resHeaders.get("Content-Length")!!.toInt()
+                                            val bodyBytes = rins.readNBytes(bodyLength)
+
+                                            ous.write(bodyBytes)
+                                            ous.flush()
+                                        }
                                     }
                                 } catch (e: Exception) {
                                     Log.e(TAG, e.stackTraceToString())
@@ -220,9 +229,11 @@ class DevtoolsService : Service() {
                         }
                     } else {
                         val response = StringBuilder()
-                        response.appendLine("HTTP/1.1 503 Service Unavailable")
-                        response.appendLine("Content-Length: 0")
-                        response.appendLine("Connection: keep-alive")
+                        response.appendLine("$httpVersion 503 Service Unavailable")
+                        if (httpVersion != "HTTP/1.0") {
+                            response.appendLine("Content-Length: 0")
+                            response.appendLine("Connection: keep-alive")
+                        }
                         response.appendLine("")
                         ous.write(
                             response

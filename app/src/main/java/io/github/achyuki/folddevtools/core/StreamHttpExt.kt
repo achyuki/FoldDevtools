@@ -78,7 +78,7 @@ fun InputStream.praseHeader(): HeaderBuilder {
     if (protocolLine.isEmpty()) {
         throw IllegalArgumentException("Empty http header")
     }
-    if (!protocolLine.startsWith("HTTP/1.1 ") && !protocolLine.startsWith("GET ")) {
+    if (!protocolLine.startsWith("HTTP/") && !protocolLine.startsWith("GET ")) {
         throw IllegalArgumentException("Unsupported http protocol")
     }
     headers["_"] = protocolLine
