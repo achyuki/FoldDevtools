@@ -8,13 +8,17 @@ private const val CR = '\r'.code
 private const val LF = '\n'.code
 
 class HeaderBuilder(private val headers: MutableMap<String, String>) {
-    fun get(key: String) = headers[key]
+    fun get(key: String) = headers[key] ?: headers[key.lowercase()]
     fun getProtocol() = headers["_"]!!.split(" ")
     fun set(key: String, value: String) {
+        remove(key)
         headers[key] = value
     }
-    fun remove(key: String) = headers.remove(key)
-    fun contains(key: String) = headers.containsKey(key)
+    fun remove(key: String) {
+        headers.remove(key)
+        headers.remove(key.lowercase())
+    }
+    fun contains(key: String) = headers.containsKey(key) or headers.containsKey(key.lowercase())
     fun build(): ByteArray {
         val outputStream = ByteArrayOutputStream()
 
