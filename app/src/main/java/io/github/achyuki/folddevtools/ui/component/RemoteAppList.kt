@@ -58,6 +58,12 @@ fun RemoteAppsList(navigator: NavController, service: IRemoteService) {
 
                     startDevtoolsService(context = context, bindHost = bindAddress, bindPort = bindPort, socket = it.socketName)
                     if (useFloat) {
+                        it.packageName?.let {
+                            runCatching {
+                                val intent = context.packageManager.getLaunchIntentForPackage(it)
+                                intent?.let { context.startActivity(it) }
+                            }
+                        }
                         DevtoolsWindow.launch(context, title)
                     } else {
                         navigator.navigate(Screen.Page.create(title))
