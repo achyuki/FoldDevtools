@@ -1,10 +1,4 @@
-<div align="center">
-
-<img src="FoldDevtools.png" width="160" height="160" alt="logo" />
-
 # FoldDevtools
-
-</div>
 
 > Using chrome devtools to debug WebView on Android.
 
