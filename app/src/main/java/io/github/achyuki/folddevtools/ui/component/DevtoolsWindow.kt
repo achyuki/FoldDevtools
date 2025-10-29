@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -222,7 +223,7 @@ object DevtoolsWindow {
                     }
             ) {
                 Column {
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(24.dp)
@@ -239,14 +240,15 @@ object DevtoolsWindow {
                         Text(
                             windowTitle,
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 10.dp),
-                            fontSize = 14.sp
+                                .padding(start = 10.dp)
+                                .weight(1f),
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterEnd)
                                 .padding(end = 10.dp)
                                 .combinedClickable(
                                     onClick = { toggleWindowState() },

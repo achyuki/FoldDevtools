@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
 import io.github.achyuki.folddevtools.ui.component.DevtoolsFrontend
@@ -40,7 +41,13 @@ fun FrontendScreen(navigator: NavController, title: String, url: String) {
 @Composable
 private fun TopBar(navigator: NavController, scrollBehavior: TopAppBarScrollBehavior, title: String) {
     TopAppBar(
-        title = { Text(title) },
+        title = {
+            Text(
+                title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
         navigationIcon = {
             IconButton(
                 onClick = dropUnlessResumed {
