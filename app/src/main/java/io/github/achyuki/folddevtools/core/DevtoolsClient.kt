@@ -54,7 +54,8 @@ data class PageInfo(
     val title: String,
     val type: String,
     val url: String,
-    val webSocketDebuggerUrl: String
+    val webSocketDebuggerUrl: String,
+    val devtoolsFrontendUrl: String
 )
 
 fun prasePageInfo(page: JSONObject): PageInfo {
@@ -74,6 +75,7 @@ fun prasePageInfo(page: JSONObject): PageInfo {
     val type = page.getString("type")
     val url = page.getString("url")
     val webSocketDebuggerUrl = page.getString("webSocketDebuggerUrl")
+    val devtoolsFrontendUrl = page.getString("devtoolsFrontendUrl")
 
-    return PageInfo(width, height, screenX, screenY, attached, never_attached, empty, visible, id, title, type, url, webSocketDebuggerUrl)
+    return PageInfo(width, height, screenX, screenY, attached, never_attached, empty, visible, id, title, type, url, webSocketDebuggerUrl, devtoolsFrontendUrl)
 }

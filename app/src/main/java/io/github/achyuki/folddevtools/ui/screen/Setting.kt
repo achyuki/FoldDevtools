@@ -74,7 +74,7 @@ fun SettingScreen(navigator: NavController) {
                         Text(text = "Force-enable WebView debugging through xposed hook")
                     }
                 )
-                val pages = listOf("devtools_app", "inspector")
+                val pages = listOf("<AUTO>", "devtools_app", "inspector", "js_app")
                 listPreference(
                     key = "entrypage",
                     defaultValue = pages[0],

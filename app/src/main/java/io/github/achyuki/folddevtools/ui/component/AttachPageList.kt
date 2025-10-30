@@ -30,6 +30,7 @@ import io.github.achyuki.folddevtools.preferences
 import io.github.achyuki.folddevtools.ui.screen.Screen
 import io.github.achyuki.folddevtools.ui.screen.ScreenState
 import java.io.*
+import java.net.URI
 import java.net.URL
 import kotlinx.coroutines.*
 
@@ -41,8 +42,6 @@ fun AttachPageList(navigator: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var pagesScreenState by remember { mutableStateOf<ScreenState<List<PageInfo>>>(ScreenState.Loading) }
     val bindPort = preferences.getInt("bindport", 9223)
-    val entryPage = preferences.getString("entrypage", null) ?: "devtools_app"
-    val extBrowser = preferences.getBoolean("extbrowser", false)
     var isForeground = true
     val devtoolsClient = DevtoolsClient("127.0.0.1", bindPort)
 
@@ -68,18 +67,25 @@ fun AttachPageList(navigator: NavController) {
                     ) {
                         items(pages) {
                             AttachPageItem(it, devtoolsClient) {
-                                var dbgurl = "http://127.0.0.1:$bindPort/$entryPage.html?ws="
+                                var dbgUrl = "http://127.0.0.1:$bindPort/"
+                                var entryPage = preferences.getString("entrypage", null) ?: "<AUTO>"
+                                var entryArg =
+                                    getEntryArg(it.devtoolsFrontendUrl) ?: "devtools_app.html" to
+                                        "ws=" + it.webSocketDebuggerUrl.removePrefix("ws://").removePrefix("ws:\\/\\/")
+                                if (entryPage != "<AUTO>") {
+                                    entryArg = entryArg.copy(first = "$entryPage.html")
+                                }
                                 if (it.type == "app") {
                                     // Stetho
-                                    dbgurl += "127.0.0.1:$bindPort/inspector"
-                                } else {
-                                    // WebView
-                                    dbgurl += it.webSocketDebuggerUrl.removePrefix("ws://").removePrefix("ws:\\/\\/")
+                                    entryArg = entryArg.copy(second = "ws=127.0.0.1:$bindPort/inspector")
                                 }
+                                dbgUrl += "${entryArg.first}?${entryArg.second}"
+
+                                val extBrowser = preferences.getBoolean("extbrowser", false)
                                 if (extBrowser) {
-                                    uriHandler.openUri(dbgurl)
+                                    uriHandler.openUri(dbgUrl)
                                 } else {
-                                    navigator.navigate(Screen.Frontend.create(it.title, dbgurl))
+                                    navigator.navigate(Screen.Frontend.create(it.title, dbgUrl))
                                 }
                             }
                         }
@@ -327,13 +333,24 @@ fun AttachPageItem(pageInfo: PageInfo, devtoolsClient: DevtoolsClient, onClick: 
     }
 }
 
-fun getFaviconUrl(urlStr: String): String? = try {
+private fun getFaviconUrl(urlStr: String): String? = try {
     val url = URL(urlStr)
     val protocol = url.protocol
     val host = url.host
     val port = if (url.port != -1 && url.port != url.defaultPort) ":${url.port}" else ""
 
     "$protocol://$host$port/favicon.ico"
+} catch (e: Exception) {
+    null
+}
+
+private fun getEntryArg(urlStr: String): Pair<String, String>? = try {
+    val url = URI(urlStr)
+    val path = url.path
+    val query = url.query
+    val entry = path.substringAfterLast("/")
+
+    entry to query
 } catch (e: Exception) {
     null
 }
