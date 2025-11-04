@@ -31,7 +31,7 @@ adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>
 
 ## Issues
 
-Please check [#1](https://github.com/achyuki/FoldDevtools/issues/1)
+Please check [#1](https://github.com/achyuki/FoldDevtools/issues/1) [#2](https://github.com/achyuki/FoldDevtools/issues/2)
 
 ## License
 
